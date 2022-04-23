@@ -20,43 +20,4 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from configparser import ConfigParser
-
-
-class Settings():
-    def __init__(self, descriptor, group='General') -> None:
-        self.parser = ConfigParser()  # use INI parser as backend
-        self.descriptor = descriptor
-        self.group = group
-
-    def save(self, dict):
-        self.parser.read(self.descriptor)
-
-        try:
-            self.parser.add_section(self.group)
-        except Exception:  # DuplicateSectionError
-            pass
-
-        for k in dict:
-            self.parser.set(self.group, k, dict[k])
-
-        with open(self.descriptor, 'w') as file:
-            self.parser.write(file)
-            file.close()
-
-    def load(self):
-        result = {}
-        self.parser.read(self.descriptor)
-        options = []
-        try:
-            options = self.parser.options(self.group)
-        except Exception:
-            pass
-        for option in options:
-            try:
-                value = self.parser.get(self.group, option)
-                if value != -1:
-                    result[option] = value
-            except Exception:
-                pass
-        return result
+from .utilities import *

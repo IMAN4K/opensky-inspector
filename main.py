@@ -25,7 +25,6 @@ from database import Database
 from downloader import Downloader
 from visualizer import Visualizer
 from datetime import datetime
-from settings import Settings
 
 
 class InvalidDateError(ValueError):
@@ -60,9 +59,13 @@ class InteractiveConsole(Cmd):
         for key in self.workers:
             self.workers[key].load_settings(args[0])
 
+    def download_callback(self, path):
+        # print(path)
+        pass
+
     def do_download(self, line):
         """
-        Download state vector samples from https://opensky-network.org in given date range
+        Download state vector samples from https://opensky-network.org/datasets/states in given date range
         It may take some time depending on given range and network bandwith
         e.g download 2020-05-11 2021-05-11
         """
@@ -75,7 +78,13 @@ class InteractiveConsole(Cmd):
         except Exception as e:
             raise InvalidDateError(
                 "Incorrect date format!(should be YYYY-MM-DD)")
+
+        if d0 > d1:
+            raise ValueError('Invalid datetime sequence!')
+
         self.workers['downloader'].set_date_range(d0, d1)
+        self.workers['downloader'].register_finish_callbacks(
+            self.download_callback)
         self.workers['downloader'].start()
 
     def do_import(self, line):
@@ -93,7 +102,5 @@ class InteractiveConsole(Cmd):
 
 
 if __name__ == "__main__":
-    set = Settings('/home/iman/opensky.ini')
-    set.save({'Im@n': 'Ahmadvand'})
-    # console = InteractiveConsole()
-    # console.cmdloop('Enter a command to proceed...')
+    console = InteractiveConsole()
+    console.cmdloop('Enter a command to proceed...')

@@ -20,43 +20,29 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from configparser import ConfigParser
+import requests
 
 
-class Settings():
-    def __init__(self, descriptor, group='General') -> None:
-        self.parser = ConfigParser()  # use INI parser as backend
-        self.descriptor = descriptor
-        self.group = group
+class UrlInformation:
+    def __init__(self, url) -> None:
+        self.url = url
+        with requests.head(url, allow_redirects=True) as response:
+            self.url_exists = response.ok
+            self.content_length = response.headers.get('content-length', 0)
 
-    def save(self, dict):
-        self.parser.read(self.descriptor)
+    def exists(self):
+        return self.url_exists
 
-        try:
-            self.parser.add_section(self.group)
-        except Exception:  # DuplicateSectionError
-            pass
+    def get_content_length(self):
+        return int(self.content_length)
 
-        for k in dict:
-            self.parser.set(self.group, k, dict[k])
+    def get_url(self):
+        return self.url
 
-        with open(self.descriptor, 'w') as file:
-            self.parser.write(file)
-            file.close()
 
-    def load(self):
-        result = {}
-        self.parser.read(self.descriptor)
-        options = []
-        try:
-            options = self.parser.options(self.group)
-        except Exception:
-            pass
-        for option in options:
-            try:
-                value = self.parser.get(self.group, option)
-                if value != -1:
-                    result[option] = value
-            except Exception:
-                pass
-        return result
+def range(start, end, delta):
+    result = [start]
+    while start < end:
+        start += delta
+        result.append(start)
+    return result
