@@ -24,5 +24,5 @@ class Database:
     def __init__(self) -> None:
         pass
 
-    def load_settings(self, args):
+    def loadSettings(self, descriptor):
         pass

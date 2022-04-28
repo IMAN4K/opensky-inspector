@@ -65,7 +65,7 @@ class InteractiveConsole(Cmd):
         """
         args = self.parse(line)
         for key in self.workers:
-            self.workers[key].load_settings(args[0])
+            self.workers[key].loadSettings(args[0])
 
     def do_download(self, line):
         """
@@ -73,7 +73,7 @@ class InteractiveConsole(Cmd):
         It may take some time depending on given range and network bandwith.
         download factor specifies how many samples will be downloaded per day [1%, 100%]
         format: download <start_date:[YYYY-MM-DD]> <end_date:[YYYY-MM-DD]> <download_factor:[1, 100]>
-        e.g download 2020-05-11 2021-05-11 100
+        e.g download 2020-05-11 2021-05-11 60
         """
         args = self.parse(line)
         d0 = datetime.now()
@@ -94,10 +94,10 @@ class InteractiveConsole(Cmd):
             raise ValueError('Invalid download factor!')
 
         downloader = self.workers['downloader']
-        downloader.register_callback(
-            DownloadCallback(self.workers['database']))
-        downloader.set_date_range(d0, d1)
-        downloader.set_download_factor(factor)
+        downloader.callbacks = [DownloadCallback(self.workers['database'])]
+        downloader.startDate = d0
+        downloader.endDate = d1
+        downloader.downloadFactor = factor
         downloader.start()
 
     def do_import(self, line):

@@ -22,23 +22,26 @@
 
 import requests
 import time
+import random
 
 
 class UrlInformation:
     def __init__(self, url) -> None:
-        self.url = url
+        self._url = url
+
         with requests.head(url, allow_redirects=True) as response:
-            self.url_exists = response.ok
-            self.content_length = response.headers.get('content-length', 0)
+            self._urlExists = response.ok
+            self._contentLength = response.headers.get('content-length', 0)
+
+    @property
+    def url(self):
+        return self._url
 
     def exists(self):
-        return self.url_exists
+        return self._urlExists
 
-    def get_content_length(self):
-        return int(self.content_length)
-
-    def get_url(self):
-        return self.url
+    def contentLength(self):
+        return int(self._contentLength)
 
 
 def range(start, end, delta):
@@ -48,5 +51,11 @@ def range(start, end, delta):
         result.append(start)
     return result
 
-def current_ms_since_epoch():
+
+def currentMsSinceEpoch():
     return int(round(time.time() * 1000))
+
+
+def strip(list, factor):
+    n = factor / 100
+    return random.sample(list, int(len(list) * (1 - n)))

@@ -25,73 +25,127 @@ from multiprocessing import Pool, cpu_count
 import os
 import tempfile
 from urllib import request, parse
-import random
-
-from numpy import double
 from settings import Settings
 import utilities
 
 
+class DownloadProgress:
+    def __init__(self, url, updateInterval, callback) -> None:
+        self._url = url
+        self._updateInterval = updateInterval
+        self._callback = callback
+
+        self._lastHookTime = utilities.currentMsSinceEpoch()
+
+    @property
+    def url(self):
+        return self._url
+
+    @url.setter
+    def url(self, arg):
+        self._url = arg
+
+    @property
+    def updateInterval(self):
+        return self._updateInterval
+
+    @updateInterval.setter
+    def updateInterval(self, arg):
+        self._updateInterval = arg
+
+    @property
+    def callback(self):
+        return self._callback
+
+    @callback.setter
+    def callback(self, arg):
+        self._callback = arg
+
+    def __call__(self, block_num, block_size, total_size):
+        if abs(self._lastHookTime - utilities.currentMsSinceEpoch()) > self.updateInterval:
+            self.callback(self.url, float(block_num * block_size))
+            self._lastHookTime = utilities.currentMsSinceEpoch()
+
+
 class Downloader:
     def __init__(self) -> None:
-        self.start_date = datetime.now()
-        self.end_date = datetime.now()
-        self.urls = []
-        self.configuration = {
-            'DownloadDirectory': tempfile.gettempdir()
-        }
-        self.callbacks = []
-        self.download_factor = 100
-        self.total_download_size = 0
-        self.downloaded_size = 0
-        self.last_progress_hook_time = utilities.current_ms_since_epoch()
+        self._startDate = datetime.now()
+        self._endDate = self._startDate
+        self._callbacks = []
+        self._downloadFactor = 100
 
-    def load_settings(self, descriptor):
+        self._urls = []
+        self._configuration = {
+            "downloaddirectory": tempfile.gettempdir()
+        }
+        self._totalDownloadSize = 0
+        self._progress = {}
+
+    @property
+    def startDate(self):
+        return self._startDate
+
+    @startDate.setter
+    def startDate(self, arg):
+        self._startDate = arg
+
+    @property
+    def endDate(self):
+        return self._endDate
+
+    @endDate.setter
+    def endDate(self, arg):
+        self._endDate = arg
+
+    @property
+    def callbacks(self):
+        return self._callbacks
+
+    @callbacks.setter
+    def callbacks(self, arg):
+        self._callbacks = arg
+
+    @property
+    def downloadFactor(self):
+        return self._downloadFactor
+
+    @downloadFactor.setter
+    def downloadFactor(self, arg):
+        self._downloadFactor = arg
+
+    def loadSettings(self, descriptor):
         settings = Settings(descriptor, 'Download')
 
         configuration = settings.load()
         if len(configuration.keys()) == 0:
-            settings.save(self.configuration)
+            settings.save(self._configuration)
         else:
-            self.configuration = configuration
+            self._configuration = configuration
 
-    def set_date_range(self, start_date, end_date):
-        self.start_date = start_date
-        self.end_date = end_date
+        print(self._configuration, self._configuration["downloaddirectory"])
 
-    def register_callback(self, callback):
-        self.callbacks.append(callback)
-
-    def set_download_factor(self, factor):
-        self.download_factor = factor
-
-    def strip(self, urls, factor):
-        n = factor / 100
-        return random.sample(urls, int(len(urls) * (1 - n)))
-
-    def download_progress(self, block_num, block_size, total_size):
-        if abs(self.last_progress_hook_time - utilities.current_ms_since_epoch()) > 3000:
-            print('Downloading... {0:0.0f}%'.format(
-                double(block_num * block_size) / self.total_download_size * 100.0))
-            self.last_progress_hook_time = utilities.current_ms_since_epoch()
+    def progress(self, url, total):
+        self._progress[url] = total
+        print('Downloading... {0:0.0f}%'.format(
+            sum(self._progress.values()) / self._totalDownloadSize * 100.0))
 
     def download(self, url):
         base_name = os.path.basename(parse.urlparse(url).path)
         full_name = os.path.join(
-            self.configuration['DownloadDirectory'], base_name)
+            self._configuration["downloaddirectory"], base_name)
         try:
             path, message = request.urlretrieve(
-                url, full_name, self.download_progress)
-            print(path, message)
-            for callback in self.callbacks:
+                url, full_name, DownloadProgress(url, 3000, self.progress))
+            for callback in self._callbacks:
                 callback(path)
         except Exception as e:
             print(e)
 
     def start(self):
-        self.urls.clear()
-        self.total_download_size = 0
-        for date in utilities.range(self.start_date.date(), self.end_date.date(), timedelta(days=1)):
+        self._urls.clear()
+        self._totalDownloadSize = 0
+
+        for date in utilities.range(self.startDate.date(), self.endDate.date(), timedelta(days=1)):
             base_url = 'https://opensky-network.org/datasets/states/{}'.format(
                 date)
             if utilities.UrlInformation(base_url).exists():
@@ -101,15 +155,16 @@ class Downloader:
                         base_url + '/{0:02d}/states_{1}-{0:02d}.csv.tar'.format(h, date))
                     if info.exists():
                         day_bucket.append(info)
-                for item in self.strip(day_bucket, abs(100 - self.download_factor)):
-                    self.urls.append(item.get_url())
-                    self.total_download_size += item.get_content_length()
+                for item in utilities.strip(day_bucket, abs(100 - self.downloadFactor)):
+                    self._urls.append(item.url)
+                    self._totalDownloadSize += item.contentLength()
 
-        if len(self.urls) > 0:
+        if len(self._urls) > 0:
             print('scheduling to download {0} MB for {1} samples'.format(
-                self.total_download_size / 1024 / 1024, len(self.urls)))
+                self._totalDownloadSize / 1024 / 1024, len(self._urls)))
 
             var = input("Willing to continue?[y|n]")
             if var == 'y' or var == 'Y':
+                self._progress.clear()
                 with Pool(cpu_count()) as pool:
-                    pool.map(self.download, self.urls)
+                    pool.map(self.download, self._urls)
