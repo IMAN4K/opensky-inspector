@@ -31,6 +31,14 @@ class InvalidDateError(ValueError):
     pass
 
 
+class DownloadCallback:
+    def __init__(self, database) -> None:
+        self.database = database
+
+    def __call__(self, path):
+        print('DownloadCallback: {0}'.format(path))
+
+
 class InteractiveConsole(Cmd):
     intro = 'opensky-inspector'
     prompt = intro + '> '
@@ -51,23 +59,21 @@ class InteractiveConsole(Cmd):
 
     def do_load(self, line):
         """
-        Load settings from configuration file(.ini)
-        It will be created if doesn't exists
+        Load settings from configuration file(*.ini)
+        It will be created if it doesn't exists
         e.g load ~/opensky-inspector.ini
         """
         args = self.parse(line)
         for key in self.workers:
             self.workers[key].load_settings(args[0])
 
-    def download_callback(self, path):
-        # print(path)
-        pass
-
     def do_download(self, line):
         """
         Download state vector samples from https://opensky-network.org/datasets/states in given date range
-        It may take some time depending on given range and network bandwith
-        e.g download 2020-05-11 2021-05-11
+        It may take some time depending on given range and network bandwith.
+        download factor specifies how many samples will be downloaded per day [1%, 100%]
+        format: download <start_date:[YYYY-MM-DD]> <end_date:[YYYY-MM-DD]> <download_factor:[1, 100]>
+        e.g download 2020-05-11 2021-05-11 100
         """
         args = self.parse(line)
         d0 = datetime.now()
@@ -80,12 +86,19 @@ class InteractiveConsole(Cmd):
                 "Incorrect date format!(should be YYYY-MM-DD)")
 
         if d0 > d1:
-            raise ValueError('Invalid datetime sequence!')
+            raise ValueError('Invalid date sequence!')
 
-        self.workers['downloader'].set_date_range(d0, d1)
-        self.workers['downloader'].register_finish_callbacks(
-            self.download_callback)
-        self.workers['downloader'].start()
+        factor = int(args[2])
+
+        if not 1 <= factor <= 100:
+            raise ValueError('Invalid download factor!')
+
+        downloader = self.workers['downloader']
+        downloader.register_callback(
+            DownloadCallback(self.workers['database']))
+        downloader.set_date_range(d0, d1)
+        downloader.set_download_factor(factor)
+        downloader.start()
 
     def do_import(self, line):
         """

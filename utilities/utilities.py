@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 import requests
+import time
 
 
 class UrlInformation:
@@ -46,3 +47,6 @@ def range(start, end, delta):
         start += delta
         result.append(start)
     return result
+
+def current_ms_since_epoch():
+    return int(round(time.time() * 1000))
