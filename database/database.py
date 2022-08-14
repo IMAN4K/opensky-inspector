@@ -20,9 +20,46 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import psycopg2 as psql
+import os
+from settings import Settings
+
 class Database:
     def __init__(self) -> None:
-        pass
+        self._configuration = {
+            "host": "localhost",
+            "port": "5432",
+            "database": "postgres",
+            "user": "postgres"
+        }
+        self.connect()
 
     def loadSettings(self, descriptor):
+        settings = Settings(descriptor, 'Database')
+
+        configuration = settings.load()
+        if len(configuration.keys()) == 0:
+            settings.save(self._configuration)
+        else:
+            self._configuration = configuration
+
+        self.connect()
+
+    def connect(self):
+        os.putenv('PGPASSWORD', '123456')
+        try:
+            self._connection = psql.connect(
+                host=self._configuration["host"],
+                port=self._configuration["port"],
+                database=self._configuration["database"],
+                user=self._configuration["user"],
+                password=os.getenv('PGPASSWORD')
+            )
+        except Exception as e:
+            print(e)
+
+    def importFile(self, path):
+        pass
+
+    def start(self):
         pass

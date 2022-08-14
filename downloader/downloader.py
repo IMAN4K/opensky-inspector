@@ -122,8 +122,6 @@ class Downloader:
         else:
             self._configuration = configuration
 
-        print(self._configuration, self._configuration["downloaddirectory"])
-
     def progress(self, url, total):
         self._progress[url] = total
         print('Downloading... {0:0.0f}%'.format(
@@ -143,6 +141,7 @@ class Downloader:
 
     def start(self):
         self._urls.clear()
+        self._progress.clear()
         self._totalDownloadSize = 0
 
         for date in utilities.range(self.startDate.date(), self.endDate.date(), timedelta(days=1)):
@@ -165,6 +164,5 @@ class Downloader:
 
             var = input("Willing to continue?[y|n]")
             if var == 'y' or var == 'Y':
-                self._progress.clear()
                 with Pool(cpu_count()) as pool:
                     pool.map(self.download, self._urls)
