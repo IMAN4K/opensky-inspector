@@ -20,12 +20,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from readline import read_init_file
 import psycopg2 as psql
 import os
 from settings import Settings
 
+
 class Database:
     def __init__(self) -> None:
+        self._connection = None
         self._configuration = {
             "host": "localhost",
             "port": "5432",
@@ -33,6 +36,10 @@ class Database:
             "user": "postgres"
         }
         self.connect()
+
+        if self._connection:
+            self.execute(os.path.join(os.path.dirname(
+                os.path.abspath(__file__)), 'schema', 'S0.sql'))
 
     def loadSettings(self, descriptor):
         settings = Settings(descriptor, 'Database')
@@ -45,21 +52,50 @@ class Database:
 
         self.connect()
 
+        if self._connection:
+            self.execute(os.path.join(os.path.dirname(
+                os.path.abspath(__file__)), 'schema', 'S0.sql'))
+
     def connect(self):
-        os.putenv('PGPASSWORD', '123456')
+        if not os.getenv('PGPASSWORD'):
+            print("Please set the PGPASSWORD environment variable!")
+
         try:
             self._connection = psql.connect(
                 host=self._configuration["host"],
                 port=self._configuration["port"],
                 database=self._configuration["database"],
                 user=self._configuration["user"],
-                password=os.getenv('PGPASSWORD')
+                password=123456
             )
         except Exception as e:
             print(e)
 
-    def importFile(self, path):
-        pass
+    def importCSV(self, path):
+        try:
+            cur = self._connection.cursor()
+            cur.execute("""
+            COPY "StateVectors"
+            FROM '{0}'
+            DELIMITER ','
+            CSV HEADER;
+            """.format(path))
+            self._connection.commit()
+            cur.close()
+        except Exception as e:
+            print(e)
+
+    def execute(self, path):
+        with open(path) as f:
+            try:
+                cur = self._connection.cursor()
+                cur.execute(f.read())
+                self._connection.commit()
+                cur.close()
+            except Exception as e:
+                print(e)
 
     def start(self):
-        pass
+        if self._connection:
+            self.execute(os.path.join(os.path.dirname(
+                os.path.abspath(__file__)), 'schema', 'S1.sql'))

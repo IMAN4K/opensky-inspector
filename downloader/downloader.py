@@ -155,6 +155,7 @@ class Downloader:
                     if info.exists():
                         day_bucket.append(info)
                 for item in utilities.strip(day_bucket, abs(100 - self.downloadFactor)):
+                    print(item.url)
                     self._urls.append(item.url)
                     self._totalDownloadSize += item.contentLength()
 
@@ -164,5 +165,6 @@ class Downloader:
 
             var = input("Willing to continue?[y|n]")
             if var == 'y' or var == 'Y':
+                print(len(self._urls))
                 with Pool(cpu_count()) as pool:
                     pool.map(self.download, self._urls)

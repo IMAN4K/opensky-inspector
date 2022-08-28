@@ -94,7 +94,7 @@ class InteractiveConsole(Cmd):
             raise ValueError('Invalid download factor!')
 
         downloader = self.workers['downloader']
-        downloader.callbacks = [DownloadCallback(self.workers['database'])]
+        # downloader.callbacks = [DownloadCallback(self.workers['database'])]
         downloader.startDate = d0
         downloader.endDate = d1
         downloader.downloadFactor = factor
