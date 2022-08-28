@@ -25,6 +25,8 @@ from database import Database
 from downloader import Downloader
 from visualizer import Visualizer
 from datetime import datetime
+import tarfile
+import os
 
 
 class InvalidDateError(ValueError):
@@ -37,6 +39,10 @@ class DownloadCallback:
 
     def __call__(self, path):
         print('DownloadCallback: {0}'.format(path))
+        file = tarfile.open(path)
+        file.extractall(os.path.dirname(path))
+        file.close()
+        os.remove(path)
 
 
 class InteractiveConsole(Cmd):
@@ -94,7 +100,7 @@ class InteractiveConsole(Cmd):
             raise ValueError('Invalid download factor!')
 
         downloader = self.workers['downloader']
-        # downloader.callbacks = [DownloadCallback(self.workers['database'])]
+        downloader.callbacks = [DownloadCallback(self.workers['database'])]
         downloader.startDate = d0
         downloader.endDate = d1
         downloader.downloadFactor = factor
