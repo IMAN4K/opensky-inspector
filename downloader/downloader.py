@@ -21,7 +21,8 @@
 # SOFTWARE.
 
 from datetime import datetime, timedelta
-from multiprocessing import Pool, cpu_count
+from multiprocessing import cpu_count
+from multiprocessing.pool import ThreadPool as Pool
 import os
 import tempfile
 from urllib import request, parse
@@ -165,6 +166,5 @@ class Downloader:
 
             var = input("Willing to continue?[y|n]")
             if var == 'y' or var == 'Y':
-                print(len(self._urls))
                 with Pool(cpu_count()) as pool:
                     pool.map(self.download, self._urls)
