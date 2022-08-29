@@ -108,7 +108,7 @@ $BODY$ LANGUAGE sql IMMUTABLE PARALLEL SAFE;
 
 DROP FUNCTION IF EXISTS get_abs_min_flight_time(BIGINT);
 CREATE OR REPLACE FUNCTION get_abs_min_flight_time(time_point BIGINT)
-RETURNS INTEGER
+RETURNS BIGINT
 AS $BODY$
     SELECT
         MIN("start_time")

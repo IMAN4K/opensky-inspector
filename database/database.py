@@ -20,7 +20,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from readline import read_init_file
 import psycopg2 as psql
 import os
 from settings import Settings
@@ -66,7 +65,7 @@ class Database:
                 port=self._configuration["port"],
                 database=self._configuration["database"],
                 user=self._configuration["user"],
-                password=123456
+                password=os.getenv('PGPASSWORD')
             )
         except Exception as e:
             print(e)
@@ -83,6 +82,7 @@ class Database:
             self._connection.commit()
             cur.close()
         except Exception as e:
+            self._connection.rollback()
             print(e)
 
     def execute(self, path):
@@ -93,6 +93,7 @@ class Database:
                 self._connection.commit()
                 cur.close()
             except Exception as e:
+                self._connection.rollback()
                 print(e)
 
     def start(self):

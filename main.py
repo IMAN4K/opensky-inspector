@@ -26,6 +26,7 @@ from downloader import Downloader
 from visualizer import Visualizer
 from datetime import datetime
 import tarfile
+import gzip
 import os
 
 
@@ -43,6 +44,15 @@ class DownloadCallback:
         file.extractall(os.path.dirname(path))
         file.close()
         os.remove(path)
+        gzFilePath = str(path).replace('.tar', '.gz')
+        csvFilePath = gzFilePath.replace('.gz', '')
+        with gzip.open(gzFilePath) as gz:
+            with open(csvFilePath, 'w+') as f:
+                f.write(gz.read().decode('UTF-8'))
+                f.close()
+                gz.close()
+                self.database.importCSV(csvFilePath)
+                os.remove(csvFilePath)
 
 
 class InteractiveConsole(Cmd):
