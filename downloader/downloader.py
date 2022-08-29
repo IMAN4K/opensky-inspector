@@ -156,7 +156,6 @@ class Downloader:
                     if info.exists():
                         day_bucket.append(info)
                 for item in utilities.strip(day_bucket, abs(100 - self.downloadFactor)):
-                    print(item.url)
                     self._urls.append(item.url)
                     self._totalDownloadSize += item.contentLength()
 

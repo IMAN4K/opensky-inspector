@@ -23,9 +23,11 @@
 INSERT INTO
     "AircraftsData" ("time", "aircraft_id", "flight_number", "position", "velocity", "vertrate", "callsign", "squawk")
 SELECT
-    "time", hex_to_int("icao24"), 0, ST_MakePoint("lon", "lat", "geoaltitude"), "velocity", "vertrate", "callsign", "squawk"::SMALLINT
+    "time", hex_to_int("icao24"), 0, ST_MakePoint("lat", "lat", "geoaltitude"), "velocity", "vertrate", "callsign", "squawk"::SMALLINT
 FROM
     "StateVectors"
+WHERE
+    "lat" IS NOT NULL AND "lat" IS NOT NULL
 
 INSERT INTO "FlightsSummary"("aircraft_id", "start_time", "end_time")
 SELECT
