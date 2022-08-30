@@ -151,7 +151,7 @@ BEGIN
             'kCallsign', "callsign",
             'kSquawk', "squawk",
             'kTrajectory', ST_AsGeoJSON (
-                ST_Collect
+                ST_MakeLine
                 (
                     ARRAY
                             (
