@@ -23,6 +23,15 @@
 class Visualizer:
     def __init__(self) -> None:
         pass
-    
+
     def loadSettings(self, descriptor):
+        pass
+
+    def addEntity(self, entity):
+        pass
+
+    def clear(self):
+        pass
+
+    def visualize(self):
         pass

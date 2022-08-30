@@ -36,6 +36,20 @@ BEGIN
 END;
 $BODY$ LANGUAGE plpgsql IMMUTABLE PARALLEL SAFE;
 
+DROP FUNCTION IF EXISTS hex(TEXT);
+CREATE OR REPLACE FUNCTION hex(val TEXT)
+RETURNS TEXT
+AS $BODY$
+    SELECT encode($1::bytea, 'hex');
+$BODY$ LANGUAGE sql IMMUTABLE STRICT;
+
+DROP FUNCTION IF EXISTS hex(INTEGER);
+CREATE OR REPLACE FUNCTION hex(val INTEGER)
+RETURNS TEXT
+AS $BODY$
+    SELECT to_hex($1);
+$BODY$ LANGUAGE sql IMMUTABLE STRICT;
+
 CREATE TABLE IF NOT EXISTS "StateVectors"
 (
     "time" BIGINT,
@@ -129,7 +143,7 @@ BEGIN
     SELECT
         json_build_object
         (
-            'kAircraftId', "aircraft_id",
+            'kAircraftId', hex("aircraft_id"),
             'kTime', TO_TIMESTAMP("time"),
             'kPosition', ST_AsGeoJSON("position"),
             'kVelocity', "velocity",
