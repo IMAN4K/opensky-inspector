@@ -20,9 +20,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from re import X
+from tkinter import Y
 import requests
 import time
 import random
+import math
 
 
 class UrlInformation:
@@ -59,3 +62,21 @@ def currentMsSinceEpoch():
 def strip(list, factor):
     n = factor / 100
     return random.sample(list, int(len(list) * (1 - n)))
+
+
+class Point():
+    X
+    Y
+
+
+def courseDirection(p0, p1):
+    Pn = p1 - p0
+    math.atan2()
+    course = (-atan2(llaDir.y, llaDir.x) * 180.0 * M_1_PI + 90.0);
+
+    if (course < 0.0)
+    {
+      course += 360.0; }
+
+    return course;
+  }

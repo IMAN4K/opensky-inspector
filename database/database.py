@@ -29,9 +29,9 @@ class Database:
     def __init__(self) -> None:
         self._connection = None
         self._configuration = {
-            "host": "localhost",
+            "host": "192.168.11.16",
             "port": "5432",
-            "database": "postgres",
+            "database": "opensky",
             "user": "postgres"
         }
         self.connect()
@@ -111,7 +111,7 @@ class Database:
                 cur.execute('SELECT * FROM get_snapshot({0});'.format(epoch))
                 rows = cur.fetchall()
                 for json in rows:
-                    result.append(json)
+                    result.append(json[0])
                 self._connection.commit()
                 cur.close()
             except Exception as e:

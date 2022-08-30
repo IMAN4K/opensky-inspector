@@ -24,6 +24,7 @@ import folium
 import webbrowser
 import tempfile
 import os
+import json
 
 
 class Visualizer:
@@ -35,17 +36,16 @@ class Visualizer:
         pass
 
     def addEntity(self, entity):
-        print(entity)
-        loc = [(54.32, 32.54), (40.721, -73.996)]
+        position = json.loads(entity['kPosition'])['coordinates']
+        track = json.loads(entity['kTrajectory'])['coordinates']
 
-        folium.PolyLine(loc,
-                        color='yellow',
-                        weight=3,
-                        opacity=0.8).add_to(self._map)
+        points = []
+        for point in track:
+            points.append((point[1], point[0]))
 
+        # marker
         folium.Marker(
-            location=[54.32, 32.54],
-            popup='Aircraft',
+            location=[position[1], position[0]],
             icon=folium.DivIcon(
                 html=f"""<div><p>This is some text </br>in a div element.</p></div> <div style="
                 background: url(/home/iman/prj/UAV/uav-3d/plugins/uav-unit/res/symbols/airplane.png) no-repeat;
@@ -56,10 +56,18 @@ class Visualizer:
                 border: none;"></div>""", icon_size=(128, 128))
         ).add_to(self._map)
 
+        # trajectory
+        folium.PolyLine(points,
+                        color='yellow',
+                        weight=3,
+                        opacity=0.8).add_to(self._map)
+
     def clear(self):
         out = os.path.join(tempfile.gettempdir(), 'map.html')
         if os.path.exists(out):
             os.remove(out)
+        self._map = folium.Map(
+            location=[0, 0], zoom_start=4, tiles="Stamen Terrain")
 
     def visualize(self):
         out = os.path.join(tempfile.gettempdir(), 'map.html')
