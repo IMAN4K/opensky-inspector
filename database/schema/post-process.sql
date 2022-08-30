@@ -20,6 +20,7 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+BEGIN;
 INSERT INTO
     "AircraftsData" ("time", "aircraft_id", "flight_number", "position", "velocity", "vertrate", "callsign", "squawk")
 SELECT
@@ -27,8 +28,10 @@ SELECT
 FROM
     "StateVectors"
 WHERE
-    "lon" IS NOT NULL AND "lat" IS NOT NULL
+    "lon" IS NOT NULL AND "lat" IS NOT NULL AND "geoaltitude" IS NOT NULL;
+COMMIT;
 
+BEGIN;
 INSERT INTO "FlightsSummary"("aircraft_id", "start_time", "end_time")
 SELECT
     "aircraft_id",
@@ -55,10 +58,12 @@ FROM
             "aircraft_id", "delta_t"
     ) A
 WHERE
-    A.start_time != A.end_time
+    A.start_time != A.end_time;
+COMMIT;
 
 
-INSERT INTO "FlightsRoutes" ("time", "flight_number", "position");
+BEGIN;
+INSERT INTO "FlightsRoutes" ("time", "flight_number", "position")
 SELECT
     B.time,
     A.flight_number,
@@ -72,13 +77,21 @@ ON
     AND
    B.time BETWEEN A.start_time AND A.end_time
 ORDER BY
-    A.aircraft_id, B.time
+    A.aircraft_id, B.time;
+COMMIT;
 
 
+BEGIN;
 UPDATE public."AircraftsData" AS FD
 SET "flight_number" = FS.flight_number
 FROM "FlightsSummary" AS FS
 WHERE
     FD.aircraft_id = FS.aircraft_id
     AND
-    FD.time BETWEEN FS.start_time AND FS.end_time
+    FD.time BETWEEN FS.start_time AND FS.end_time;
+COMMIT;
+
+BEGIN;
+UPDATE public."GlobalStatistics" 
+SET max_flight_duration = (SELECT MAX(ABS(start_time - end_time)) FROM public."FlightsSummary" WHERE end_time IS NOT NULL);
+COMMIT;

@@ -38,7 +38,7 @@ class Database:
 
         if self._connection:
             self.execute(os.path.join(os.path.dirname(
-                os.path.abspath(__file__)), 'schema', 'S0.sql'))
+                os.path.abspath(__file__)), 'schema', 'pre-process.sql'))
 
     def loadSettings(self, descriptor):
         settings = Settings(descriptor, 'Database')
@@ -53,7 +53,7 @@ class Database:
 
         if self._connection:
             self.execute(os.path.join(os.path.dirname(
-                os.path.abspath(__file__)), 'schema', 'S0.sql'))
+                os.path.abspath(__file__)), 'schema', 'pre-process.sql'))
 
     def connect(self):
         if not os.getenv('PGPASSWORD'):
@@ -99,4 +99,22 @@ class Database:
     def start(self):
         if self._connection:
             self.execute(os.path.join(os.path.dirname(
-                os.path.abspath(__file__)), 'schema', 'S1.sql'))
+                os.path.abspath(__file__)), 'schema', 'post-process.sql'))
+
+    def query(self, epoch):
+        result = list()
+
+        if self._connection:
+            try:
+                cur = self._connection.cursor()
+                cur.execute('SELECT * FROM get_snapshot({0});'.format(epoch))
+                rows=cur.fetchall()
+                for json in rows:
+                    result.append(json)
+                self._connection.commit()
+                cur.close()
+            except Exception as e:
+                self._connection.rollback()
+                print(e)
+
+        return result

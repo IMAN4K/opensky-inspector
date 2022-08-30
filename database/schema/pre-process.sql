@@ -119,3 +119,75 @@ AS $BODY$
         AND
         "end_time" BETWEEN time_point AND time_point + get_max_flight_duration();
 $BODY$ LANGUAGE sql IMMUTABLE PARALLEL SAFE;
+
+DROP FUNCTION IF EXISTS get_snapshot(BIGINT);
+CREATE OR REPLACE FUNCTION get_snapshot(time_point BIGINT)
+RETURNS TABLE (foo JSON)
+AS $BODY$
+BEGIN
+    RETURN QUERY
+    SELECT
+        json_build_object
+        (
+            'kAircraftId', "aircraft_id",
+            'kTime', TO_TIMESTAMP("time"),
+            'kPosition', ST_AsGeoJSON("position"),
+            'kVelocity', "velocity",
+            'kVertrate', "vertrate",
+            'kCallsign', "callsign",
+            'kSquawk', "squawk",
+            'kTrajectory', ST_AsGeoJSON (
+                ST_Collect
+                (
+                    ARRAY
+                            (
+                                SELECT
+                                    "position"
+                                FROM
+                                    "FlightsRoutes"
+                                WHERE
+                                    "flight_number" = A."flight_number"
+                                AND
+                                    "time" BETWEEN get_abs_min_flight_time(time_point) AND time_point
+                                ORDER
+                                    BY time DESC
+                            )
+                )
+            )
+        )
+    FROM
+        (
+            SELECT
+                DISTINCT ON ("flight_number") "flight_number",
+                "time",
+                "position",
+                "aircraft_id",
+                "velocity",
+                "vertrate",
+                "callsign",
+                "squawk"
+            FROM
+                "AircraftsData"
+            WHERE
+                "time" BETWEEN get_abs_min_flight_time(time_point) AND time_point
+            ORDER BY
+                "flight_number", "time" DESC
+        ) A
+    WHERE
+        "flight_number" = ANY
+        (
+            ARRAY
+            (
+                SELECT
+                    "flight_number"
+                FROM
+                    "FlightsSummary"
+                WHERE
+                    "start_time" BETWEEN time_point - get_max_flight_duration() AND time_point
+                    AND
+                    "end_time" BETWEEN time_point AND time_point + get_max_flight_duration()
+            )
+        );
+END
+$BODY$ LANGUAGE plpgsql IMMUTABLE PARALLEL SAFE;
+

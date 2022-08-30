@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 from cmd import Cmd
+from time import sleep
 from database import Database
 from downloader import Downloader
 from visualizer import Visualizer
@@ -39,7 +40,6 @@ class DownloadCallback:
         self.database = database
 
     def __call__(self, path):
-        print('DownloadCallback: {0}'.format(path))
         file = tarfile.open(path)
         file.extractall(os.path.dirname(path))
         file.close()
@@ -127,7 +127,9 @@ class InteractiveConsole(Cmd):
         """
         Visualize the active flights at given time point from imported state vector samples
         """
-        pass
+        tuples = self.workers['database'].query(1591021770)
+        for tuple in tuples:
+            print(tuple)
 
 
 if __name__ == "__main__":
