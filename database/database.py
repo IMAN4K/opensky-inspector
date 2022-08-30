@@ -71,8 +71,8 @@ class Database:
             print(e)
 
     def importCSV(self, path):
+        cur = self._connection.cursor()
         try:
-            cur = self._connection.cursor()
             cur.execute("""
             COPY "StateVectors"
             FROM '{0}'
@@ -82,7 +82,8 @@ class Database:
             self._connection.commit()
             cur.close()
         except Exception as e:
-            self._connection.rollback()
+            self._connection.commit()
+            cur.close()
             print(e)
 
     def execute(self, path):
@@ -108,7 +109,7 @@ class Database:
             try:
                 cur = self._connection.cursor()
                 cur.execute('SELECT * FROM get_snapshot({0});'.format(epoch))
-                rows=cur.fetchall()
+                rows = cur.fetchall()
                 for json in rows:
                     result.append(json)
                 self._connection.commit()
