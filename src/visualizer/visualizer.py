@@ -20,7 +20,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# import plotly.express as px
 import plotly.graph_objects as go
 import json
 import utilities
@@ -44,8 +43,6 @@ class Visualizer:
         self._figure.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
         self._figure.update_layout(showlegend=False)
         self._figure.update_layout(hovermode='x')
-        self._longitudes = []
-        self._latitudes = []
 
     def loadSettings(self, descriptor):
         pass
@@ -57,9 +54,11 @@ class Visualizer:
         if len(track) <= 1:
             return
 
+        longitudes = []
+        latitudes = []
         for point in track:
-            self._longitudes.append(point[0])
-            self._latitudes.append(point[1])
+            longitudes.append(point[0])
+            latitudes.append(point[1])
 
         # marker
         hoverInfo = """
@@ -81,13 +80,11 @@ class Visualizer:
             marker={'symbol': 'airport', 'size': 15, 'color': 'lightyellow', 'angle': bearing}))
 
         # trajectory
+        self._figure.add_trace(go.Scattermapbox(
+            mode="lines",
+            lon=longitudes,
+            lat=latitudes,
+            line={'width': 3, 'color': 'orange'}))
 
     def visualize(self):
-        print(self._longitudes)
-        print(self._latitudes)
-        self._figure.add_trace(go.Scattergeo(
-            mode="lines",
-            lon=self._longitudes,
-            lat=self._latitudes,
-            line={'width': 3, 'color': 'orange'}))
         self._figure.show()
