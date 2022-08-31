@@ -108,7 +108,8 @@ class Database:
         if self._connection:
             try:
                 cur = self._connection.cursor()
-                cur.execute('SELECT * FROM get_snapshot({0});'.format(epoch))
+                cur.execute(
+                    'SELECT * FROM get_snapshot({0}) LIMIT 250;'.format(epoch))
                 rows = cur.fetchall()
                 for json in rows:
                     result.append(json[0])
