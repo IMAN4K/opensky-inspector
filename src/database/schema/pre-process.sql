@@ -144,7 +144,7 @@ BEGIN
         json_build_object
         (
             'kAircraftId', hex("aircraft_id"),
-            'kTime', TO_TIMESTAMP("time"),
+            'kTime', TO_TIMESTAMP("time") AT time zone 'UTC',
             'kPosition', ST_AsGeoJSON("position"),
             'kVelocity', "velocity",
             'kVertrate', "vertrate",

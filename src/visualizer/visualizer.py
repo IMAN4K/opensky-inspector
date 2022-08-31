@@ -40,9 +40,10 @@ class Visualizer:
             zoom=3
         ))
         self._figure.update_layout(mapbox_accesstoken=MAPBOX_API_TOKEN)
-        self._figure.update_layout(mapbox_style="dark")
+        self._figure.update_layout(mapbox_style="light")
         self._figure.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
         self._figure.update_layout(showlegend=False)
+        self._figure.update_layout(hovermode='x')
 
     def loadSettings(self, descriptor):
         pass
@@ -58,7 +59,7 @@ class Visualizer:
             latitudes.append(point[1])
 
         # marker
-        info = """
+        hoverInfo = """
         Time: {0}</br>
         Velocity: {1}</br>
         VerticalRate: {2}</br>
@@ -67,19 +68,19 @@ class Visualizer:
         """.format(entity['kTime'], entity['kVelocity'], entity['kVertrate'], entity['kCallsign'], entity['kSquawk'])
         self._figure.add_trace(go.Scattermapbox(
             mode="markers+text",
-            lon=[position[0]],
-            lat=[position[1]],
+            lon=[float("{:.6f}".format(position[0]))],
+            lat=[float("{:.6f}".format(position[1]))],
             text=str(entity['kAircraftId']).upper(),
             textposition='top center',
-            hovertext=info,
-            marker={'symbol': 'airport', 'size': 15, 'angle': 95.0}))
+            hovertext=hoverInfo,
+            marker={'symbol': 'airport', 'size': 15, 'color': 'lightyellow', 'angle': 95.0}))
 
         # trajectory
         self._figure.add_trace(go.Scattermapbox(
             mode="lines",
             lon=longitudes,
             lat=latitudes,
-            line={'width': 3, 'color': 'yellow'}))
+            line={'width': 3, 'color': 'orange'}))
 
     def visualize(self):
         self._figure.show()

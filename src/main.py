@@ -128,9 +128,8 @@ class InteractiveConsole(Cmd):
         """
         visualizer = self.workers['visualizer']
         tuples = self.workers['database'].query(1591017000)
-        visualizer.addEntity(tuples[0])
-        # for tuple in tuples:
-        #     visualizer.addEntity(tuple)
+        for tuple in tuples[0:100]:
+            visualizer.addEntity(tuple)
         visualizer.visualize()
 
 
