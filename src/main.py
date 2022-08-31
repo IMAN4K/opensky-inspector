@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 from cmd import Cmd
+from operator import le
 from database import Database
 from downloader import Downloader
 from visualizer import Visualizer
@@ -122,15 +123,27 @@ class InteractiveConsole(Cmd):
         """
         self.workers['database'].start()
 
-    def do_visualize(self, args):
+    def do_visualize(self, line):
         """
         Visualize the active flights at given time point from imported state vector samples
+        e.g -> visualize 2020-06-01 18:59:30
         """
-        visualizer = self.workers['visualizer']
-        tuples = self.workers['database'].query(1591021770)
-        for tuple in tuples:
-            visualizer.addEntity(tuple)
-        visualizer.visualize()
+        args = self.parse(line)
+        d0 = datetime.now()
+        try:
+            d0 = datetime.strptime(
+                args[0] + ' ' + args[1], '%Y-%m-%d %H:%M:%S')
+            visualizer = self.workers['visualizer']
+            tuples = self.workers['database'].query(int(d0.timestamp()))
+            if len(tuples) == 0:
+                print('No data at given time!')
+            else:
+                for tuple in tuples:
+                    visualizer.addEntity(tuple)
+                visualizer.visualize()
+        except Exception as e:
+            raise InvalidDateError(
+                "Incorrect date format!(should be YYYY-MM-DD H:M:S)")
 
 
 if __name__ == "__main__":
