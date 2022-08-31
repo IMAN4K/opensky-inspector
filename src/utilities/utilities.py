@@ -20,4 +20,42 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from .settings import *
+import requests
+import time
+import random
+
+
+class UrlInformation:
+    def __init__(self, url) -> None:
+        self._url = url
+
+        with requests.head(url, allow_redirects=True) as response:
+            self._urlExists = response.ok
+            self._contentLength = response.headers.get('content-length', 0)
+
+    @property
+    def url(self):
+        return self._url
+
+    def exists(self):
+        return self._urlExists
+
+    def contentLength(self):
+        return int(self._contentLength)
+
+
+def range(start, end, delta):
+    result = [start]
+    while start < end:
+        start += delta
+        result.append(start)
+    return result
+
+
+def currentMsSinceEpoch():
+    return int(round(time.time() * 1000))
+
+
+def strip(list, factor):
+    n = factor / 100
+    return random.sample(list, int(len(list) * (1 - n)))

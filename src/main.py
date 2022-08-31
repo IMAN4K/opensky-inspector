@@ -21,7 +21,6 @@
 # SOFTWARE.
 
 from cmd import Cmd
-from time import sleep
 from database import Database
 from downloader import Downloader
 from visualizer import Visualizer
@@ -128,10 +127,10 @@ class InteractiveConsole(Cmd):
         Visualize the active flights at given time point from imported state vector samples
         """
         visualizer = self.workers['visualizer']
-        visualizer.clear()
         tuples = self.workers['database'].query(1591017000)
-        for tuple in tuples:
-            visualizer.addEntity(tuple)
+        visualizer.addEntity(tuples[0])
+        # for tuple in tuples:
+        #     visualizer.addEntity(tuple)
         visualizer.visualize()
 
 

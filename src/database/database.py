@@ -29,7 +29,7 @@ class Database:
     def __init__(self) -> None:
         self._connection = None
         self._configuration = {
-            "host": "192.168.11.16",
+            "host": "localhost",
             "port": "5432",
             "database": "opensky",
             "user": "postgres"
