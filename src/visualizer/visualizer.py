@@ -44,6 +44,8 @@ class Visualizer:
         self._figure.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
         self._figure.update_layout(showlegend=False)
         self._figure.update_layout(hovermode='x')
+        self._longitudes = []
+        self._latitudes = []
 
     def loadSettings(self, descriptor):
         pass
@@ -55,11 +57,9 @@ class Visualizer:
         if len(track) <= 1:
             return
 
-        longitudes = []
-        latitudes = []
         for point in track:
-            longitudes.append(point[0])
-            latitudes.append(point[1])
+            self._longitudes.append(point[0])
+            self._latitudes.append(point[1])
 
         # marker
         hoverInfo = """
@@ -70,7 +70,7 @@ class Visualizer:
         Squawk: {4}</br>
         """.format(entity['kTime'], entity['kVelocity'], entity['kVertrate'], entity['kCallsign'], entity['kSquawk'])
         bearing = utilities.calculateBearing(
-            longitudes[0], latitudes[0], longitudes[1], latitudes[1])
+            track[0][0], track[0][1], track[1][0], track[1][1])
         self._figure.add_trace(go.Scattermapbox(
             mode="markers+text",
             lon=[float("{:.6f}".format(position[0]))],
@@ -81,11 +81,13 @@ class Visualizer:
             marker={'symbol': 'airport', 'size': 15, 'color': 'lightyellow', 'angle': bearing}))
 
         # trajectory
-        self._figure.add_trace(go.Scattermapbox(
-            mode="lines",
-            lon=longitudes,
-            lat=latitudes,
-            line={'width': 3, 'color': 'orange'}))
 
     def visualize(self):
+        print(self._longitudes)
+        print(self._latitudes)
+        self._figure.add_trace(go.Scattergeo(
+            mode="lines",
+            lon=self._longitudes,
+            lat=self._latitudes,
+            line={'width': 3, 'color': 'orange'}))
         self._figure.show()

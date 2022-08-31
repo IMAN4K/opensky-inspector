@@ -1,13 +1,18 @@
-# opensky-inspector
+# Opensky Inspector 
+Inspector and visualizer for opensky-network.org state vector data archive. this small project is intended to import that data into database cluster then visualize the snap shot data of aircraft flights at any time point.
 
-Inspector and visualizer for opensky-network.org state vector samples archive
+<p align="center">
+  <img src="assets/plot.png" />
+</p>
 
-# Get started
-
-1.Run main.py
+## Get started
+ - Run src/main.py
     `python3 main.py`
-2.After prompt of interactive console:
+ - Load your configurations or create one if it doesn't exists:
     `> load ~/opensky-inspector.ini`
+ - Download archive data in given datetime range:
     `> download 2020-05-11 2021-05-11`
+ - Import (post-process) the data
     `> import`
+ - Visualize the imported data
     `> visualize 2020-05-11 11:55:31`

@@ -127,8 +127,8 @@ class InteractiveConsole(Cmd):
         Visualize the active flights at given time point from imported state vector samples
         """
         visualizer = self.workers['visualizer']
-        tuples = self.workers['database'].query(1591017000)
-        for tuple in tuples[0:100]:
+        tuples = self.workers['database'].query(1591021770)
+        for tuple in tuples:
             visualizer.addEntity(tuple)
         visualizer.visualize()
 

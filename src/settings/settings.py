@@ -25,36 +25,36 @@ from configparser import ConfigParser
 
 class Settings():
     def __init__(self, descriptor, group='General') -> None:
-        self.parser = ConfigParser()  # use INI parser as backend
-        self.descriptor = descriptor
-        self.group = group
+        self._parser = ConfigParser()  # use INI parser as backend
+        self._descriptor = descriptor
+        self._group = group
 
     def save(self, dict):
-        self.parser.read(self.descriptor)
+        self._parser.read(self._descriptor)
 
         try:
-            self.parser.add_section(self.group)
+            self._parser.add_section(self._group)
         except Exception:  # DuplicateSectionError
             pass
 
         for k in dict:
-            self.parser.set(self.group, k, dict[k])
+            self._parser.set(self._group, k, dict[k])
 
-        with open(self.descriptor, 'w') as file:
-            self.parser.write(file)
+        with open(self._descriptor, 'w') as file:
+            self._parser.write(file)
             file.close()
 
     def load(self):
         result = {}
-        self.parser.read(self.descriptor)
+        self._parser.read(self._descriptor)
         options = []
         try:
-            options = self.parser.options(self.group)
+            options = self._parser.options(self._group)
         except Exception:
             pass
         for option in options:
             try:
-                value = self.parser.get(self.group, option)
+                value = self._parser.get(self._group, option)
                 if value != -1:
                     result[option] = value
             except Exception:

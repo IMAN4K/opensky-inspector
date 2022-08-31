@@ -29,9 +29,9 @@ class Database:
     def __init__(self) -> None:
         self._connection = None
         self._configuration = {
-            "host": "192.168.11.16",
+            "host": "localhost",
             "port": "5432",
-            "database": "opensky",
+            "database": "postgres",
             "user": "postgres"
         }
         self.connect()
@@ -109,7 +109,7 @@ class Database:
             try:
                 cur = self._connection.cursor()
                 cur.execute(
-                    'SELECT * FROM get_snapshot({0}) LIMIT 250;'.format(epoch))
+                    'SELECT * FROM get_snapshot({0});'.format(epoch))
                 rows = cur.fetchall()
                 for json in rows:
                     result.append(json[0])
