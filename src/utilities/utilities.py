@@ -23,6 +23,7 @@
 import requests
 import time
 import random
+import math
 
 
 class UrlInformation:
@@ -59,3 +60,11 @@ def currentMsSinceEpoch():
 def strip(list, factor):
     n = factor / 100
     return random.sample(list, int(len(list) * (1 - n)))
+
+
+def calculateBearing(long0, lat0, long1, lat1):
+    course = -math.atan2(lat0 - lat1, long0 - long1) * \
+        180.0 * 0.31830988618379067154 + 90.0
+    if course < 0.0:
+        course += 360.0
+    return course

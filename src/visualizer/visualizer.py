@@ -20,10 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import plotly.express as px
+# import plotly.express as px
 import plotly.graph_objects as go
-import os
 import json
+import utilities
 
 # read-only public token
 MAPBOX_API_TOKEN = 'pk.eyJ1IjoiaW1hbjRrIiwiYSI6ImNsN2g0dHc5bzBiMmwzb21tMWRpcWNxZ28ifQ.qhXJV35XXhAm2l2XKkCvZg'
@@ -52,6 +52,9 @@ class Visualizer:
         position = json.loads(entity['kPosition'])['coordinates']
         track = json.loads(entity['kTrajectory'])['coordinates']
 
+        if len(track) <= 1:
+            return
+
         longitudes = []
         latitudes = []
         for point in track:
@@ -66,6 +69,8 @@ class Visualizer:
         CallSign: {3}</br>
         Squawk: {4}</br>
         """.format(entity['kTime'], entity['kVelocity'], entity['kVertrate'], entity['kCallsign'], entity['kSquawk'])
+        bearing = utilities.calculateBearing(
+            longitudes[0], latitudes[0], longitudes[1], latitudes[1])
         self._figure.add_trace(go.Scattermapbox(
             mode="markers+text",
             lon=[float("{:.6f}".format(position[0]))],
@@ -73,7 +78,7 @@ class Visualizer:
             text=str(entity['kAircraftId']).upper(),
             textposition='top center',
             hovertext=hoverInfo,
-            marker={'symbol': 'airport', 'size': 15, 'color': 'lightyellow', 'angle': 95.0}))
+            marker={'symbol': 'airport', 'size': 15, 'color': 'lightyellow', 'angle': bearing}))
 
         # trajectory
         self._figure.add_trace(go.Scattermapbox(
